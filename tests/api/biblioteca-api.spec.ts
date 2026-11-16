@@ -111,3 +111,27 @@ test('impede o empréstimo de Vidas Secas quando não há exemplares disponívei
   expect(erro.erro).toBe('Livro indisponível');
   expect(erro.status).toBe(409);
 });
+
+
+test('impede que um leitor consulte a lista de usuários', async ({ request }) => {
+  // Autentica como leitor
+  const token = await obterToken(request, LEITOR);
+
+  // Tenta acessar um endpoint exclusivo do administrador
+  const resposta = await request.get('/api/usuarios', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  // Valida o status de acesso proibido
+  expect(resposta.status()).toBe(403);
+
+  // Valida o corpo da resposta
+  const erro = await resposta.json();
+
+  expect(erro.erro).toEqual(expect.any(String));
+  expect(erro.erro.length).toBeGreaterThan(0);
+  expect(erro.status).toBe(403);
+  expect(erro.detalhes).toEqual(expect.any(Array));
+});
